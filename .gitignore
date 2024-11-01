@@ -286,3 +286,5 @@ nbgv.exe
 
 
 /src/Samples/AllSamples.sln
+.aider*
+.env

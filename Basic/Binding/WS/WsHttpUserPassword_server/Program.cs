@@ -3,35 +3,56 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
+/// <summary>
+/// The main namespace for the WSHttpUserPassword server application.
+/// </summary>
 namespace NetCoreServer
 {
+    /// <summary>
+    /// The main entry point for the WSHttpUserPassword server application.
+    /// </summary>
     class Program
     {
+        /// <summary>
+        /// The HTTP port number for the server.
+        /// </summary>
         public const int HTTP_PORT = 8088;
+        /// <summary>
+        /// The HTTPS port number for the server.
+        /// </summary>
         public const int HTTPS_PORT = 8443;
 
+        /// <summary>
+        /// The main method that starts the web host.
+        /// </summary>
+        /// <param name="args">Command-line arguments.</param>
         static void Main(string[] args)
         {
             IWebHost host = CreateWebHostBuilder(args).Build();
             host.Run();
         }
 
+        /// <summary>
+        /// Creates a web host builder configured to use Kestrel and the WSHttpUserPassword startup class.
+        /// </summary>
+        /// <param name="args">Command-line arguments.</param>
+        /// <returns>An IWebHostBuilder instance.</returns>
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-            .UseKestrel(options =>
+            .UseKestrel(options => // Configure Kestrel server options
             {
-                options.ListenLocalhost(HTTP_PORT);
-                options.ListenLocalhost(HTTPS_PORT, listenOptions =>
+                options.ListenLocalhost(HTTP_PORT); // Listen on HTTP port
+                options.ListenLocalhost(HTTPS_PORT, listenOptions => // Listen on HTTPS port
                 {
-                    listenOptions.UseHttps();
+                    listenOptions.UseHttps(); // Use HTTPS for secure communication
                     if (Debugger.IsAttached)
                     {
-                        listenOptions.UseConnectionLogging();
+                        listenOptions.UseConnectionLogging(); // Enable connection logging if debugging
                     }
                 });
             })
 
-            // Replace with other WSFedBinding or WSHttpWithWindowsAuthAndRoles for other binding types
+            // Use the WSHttpUserPassword startup class for configuring the application
             .UseStartup<WSHttpUserPassword>();
     }
 }
