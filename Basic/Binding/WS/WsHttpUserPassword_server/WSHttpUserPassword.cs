@@ -4,6 +4,7 @@ using CoreWCF.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 using Contract;
 
 /// <summary>
@@ -25,6 +26,12 @@ namespace NetCoreServer
             //Enable CoreWCF Services, with metadata (WSDL) support
             services.AddServiceModelServices()
                 .AddServiceModelMetadata();
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<EchoService>();
+
+            services.AddDistributedMemoryCache();
+            services.AddSession(); // Add session services
         }
 
         /// <summary>
@@ -33,6 +40,8 @@ namespace NetCoreServer
         /// <param name="app">The application builder to configure.</param>
         public void Configure(IApplicationBuilder app)
         {
+            app.UseSession(); // Use session middleware
+
             // Create a WSHttpBinding with TransportWithMessageCredential security mode
             var wsHttpBindingWithCredential = new WSHttpBinding(SecurityMode.TransportWithMessageCredential);
             wsHttpBindingWithCredential.Security.Message.ClientCredentialType = MessageCredentialType.UserName;
@@ -57,6 +66,17 @@ namespace NetCoreServer
                 // Enable WSDL metadata to be available over HTTP and HTTPS
                 var serviceMetadataBehavior = app.ApplicationServices.GetRequiredService<CoreWCF.Description.ServiceMetadataBehavior>();
                 serviceMetadataBehavior.HttpGetEnabled = serviceMetadataBehavior.HttpsGetEnabled = true;
+                // Enable detailed exception information in faults
+                builder.ConfigureServiceHostBase<EchoService>(host =>
+                {
+                    var debugBehavior = host.Description.Behaviors.Find<CoreWCF.Description.ServiceDebugBehavior>();
+                    if (debugBehavior == null)
+                    {
+                        debugBehavior = new CoreWCF.Description.ServiceDebugBehavior();
+                        host.Description.Behaviors.Add(debugBehavior);
+                    }
+                    debugBehavior.IncludeExceptionDetailInFaults = true;
+                });
             });
         }
     }

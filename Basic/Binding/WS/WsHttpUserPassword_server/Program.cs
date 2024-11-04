@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// The main namespace for the WSHttpUserPassword server application.
@@ -53,6 +54,13 @@ namespace NetCoreServer
             })
 
             // Use the WSHttpUserPassword startup class for configuring the application
+            .ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
+                logging.AddDebug();
+                logging.SetMinimumLevel(LogLevel.Debug);
+            })
             .UseStartup<WSHttpUserPassword>();
     }
 }
